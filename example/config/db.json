@@ -1,0 +1,65 @@
+
+{
+    "queryUseLocalTime": true,
+    "modelDefaultPath": "dbmodel",
+    "useTablePartition": false,
+    "db" :{
+        "test1":{
+          "enable": true,
+          "dialect": "mysql",
+          "host": "127.0.0.1",
+          "port": 3306,
+          "database": "test1",
+          "username": "root",
+          "password": "111111",
+          "logging": "console.log",
+          "timezone": "+08:00",
+          "modelPath": ["./modelPaths"]
+        },
+        "test2": {
+            "dialect": "mysql",
+            "host": "127.0.0.1",
+            "port": 3308,
+            "database": "test2",
+            "username": "root",
+            "password": "111111",
+            "logging": true,
+            "modelPath": ["./modelPaths"]
+        },
+        "test3": {
+            "enable":false,
+            "dialect": "postgres",
+            "host": "127.0.0.1",
+            "port": 3310,
+            "database": "test3",
+            "username": "postgres",
+            "password": "111111",
+            "logging": true,
+            "modelPath": ["./modelPaths"]
+        },
+        "test4": {
+            "enable": false,
+            "dialect": "opengauss",
+            "host": "127.0.0.1",
+            "port": 5432,
+            "database": "test4",
+            "username": "gaussdb",
+            "password": "111111",
+            "logging": false,
+            "timezone": "UTC",
+            "options" : {
+              "Sslmode": "allow"
+            },
+            "odbc":{
+              "connectionTimeout": 5,
+              "loginTimeout": 5,
+              "initialSize": 2,
+              "incrementSize": 2,
+              "maxSize": 10,
+              "reuseConnections": true,
+              "shrink": true
+            }
+        }
+
+    }
+}

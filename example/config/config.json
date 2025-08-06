@@ -1,0 +1,24 @@
+{
+    "mservice":{
+        "enable": false
+    },
+    "plugins": {
+        "db": {
+            "path": "../src/index.js",
+            "enable": true,
+            "alias": "_db",
+            "cfgName": "db"
+        }
+    },
+    "dbs": {
+        "test1":{
+            "dialect": "mysql",
+            "host": "127.0.0.1",
+            "port": 3306,
+            "database": "test",
+            "username": "root",
+            "password": "111111",
+            "logging": false
+        }
+    }
+}

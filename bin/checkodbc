@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+
+const { execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+
+const chkVer = 18;
+
+/**
+ *
+ * @param szStr
+ */
+function parseVersion(szStr) {
+  const [major, minor, patch] = szStr.replace("v", "").split(".").map(Number);
+  return { major, minor, patch };
+}
+
+/**
+ * 比较版本号
+ *
+ * @param {any} version1
+ * @param {any} version2
+ * @returns {number} - < 0: A <B
+ *  - = 0: A = B
+ *  - > 0: A > B
+ */
+function compareVersions(version1, version2) {
+  if (version1.major !== version2.major) {
+    return version1.major - version2.major;
+  }
+  if (version1.minor !== version2.minor) {
+    return version1.minor - version2.minor;
+  }
+  return version1.patch - version2.patch;
+}
+
+/**
+ *
+ * @param sourceDir
+ * @param destDir
+ */
+async function copyDir(sourceDir, destDir) {
+  // 创建目标目录（递归创建）
+  await fs.promises.mkdir(destDir, { recursive: true });
+
+  // 读取源目录中的所有条目
+  const entries = await fs.promises.readdir(sourceDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+
+    if (entry.isDirectory()) {
+      // 递归复制子目录
+      await copyDir(sourcePath, destPath);
+    } else {
+      // 复制文件
+      await fs.promises.copyFile(sourcePath, destPath);
+    }
+  }
+}
+
+(async () => {
+  try {
+    const nodeVer = parseVersion(process.version);
+
+    // 获取全局node_modules目录
+    const globalNodeModulesPath = execSync("npm root -g").toString().trim();
+
+    console.log(globalNodeModulesPath);
+    const cmd = `npm list -g --json --depth=0`;
+
+    const output = execSync(cmd).toString();
+
+    let bInstallOdbc = false;
+    let bInstallOdbc248 = false;
+
+    const ls = JSON.parse(output);
+    if (ls?.dependencies?.odbc) {
+      const odbcVer = parseVersion(ls.dependencies.odbc.version);
+      console.log(odbcVer);
+      if (
+        nodeVer.major < chkVer &&
+        compareVersions(odbcVer, { major: 2, minor: 4, patch: 8 }) > 0
+      ) {
+        bInstallOdbc = true;
+        bInstallOdbc248 = true;
+      } else if (
+        nodeVer.major >= chkVer &&
+        compareVersions(odbcVer, { major: 2, minor: 4, patch: 8 }) <= 0
+      ) {
+        bInstallOdbc = true;
+        bInstallOdbc248 = false;
+      }
+    } else {
+      bInstallOdbc = true;
+      bInstallOdbc248 = nodeVer.major < chkVer;
+    }
+
+    if (bInstallOdbc) {
+      // if (bInstallOdbc248) {
+      //   console.log(`node ver < ${chkVer}, install old version`);
+      //   execSync("npm install --verbose -g odbc@2.4.8", { stdio: "inherit" });
+      // } else {
+      execSync("npm install --verbose -g odbc", { stdio: "inherit" });
+      // }
+    }
+
+    const odbcPkgPath = path.join(globalNodeModulesPath, "odbc");
+
+    const prjPath = path.join(process.cwd(), "node_modules");
+    if (fs.existsSync(prjPath) === false) {
+      fs.mkdirSync(prjPath);
+    }
+    console.log(prjPath);
+
+    const curOdbcPkgPath = path.join(prjPath, "odbc");
+    if (fs.existsSync(curOdbcPkgPath) === true) {
+      fs.rmSync(curOdbcPkgPath, { recursive: true });
+    }
+
+    console.log(`install odbc ...`);
+    await copyDir(odbcPkgPath, curOdbcPkgPath);
+    console.log(`install odbc success`);
+  } catch (error) {
+    console.error(__filename, error);
+  }
+})();
