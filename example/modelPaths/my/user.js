@@ -1,6 +1,6 @@
-const { DataTypes, Model } = require("@sequelize/core");
+const { DataTypes, Model } = require( "@sequelize/core" );
 
-const modelName = "radar_product";
+const modelName = "user";
 
 class Product extends Model {}
 
@@ -8,7 +8,7 @@ class Product extends Model {}
  * @param {import('@sequelize/core').Sequelize} seqIns seq 实例
  * @returns {Radar}
  */
-function createModel(seqIns) {
+function createModel ( seqIns ) {
   Product.init(
     {
       id: {
@@ -17,16 +17,10 @@ function createModel(seqIns) {
         autoIncrement: true,
         allowNull: false,
       },
-      p_id: {
-        type: DataTypes.INTEGER,
-      },
-      name: {
+      username: {
         type: DataTypes.STRING,
       },
-      ename: {
-        type: DataTypes.STRING,
-      },
-      script: {
+      password: {
         type: DataTypes.STRING,
       }
     },

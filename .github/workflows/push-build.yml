@@ -10,6 +10,21 @@ jobs:
     permissions:               # 让 GITHUB_TOKEN 有读包权限
       contents: read
       packages: read
+    # 1) MySQL 服务容器定义
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: my           # 自动创建数据库 my
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,4 +35,9 @@ jobs:
       - run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Init DB
+        run: |
+          while ! mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do sleep 1; done
+          mysql -h 127.0.0.1 -P 3306 -u root -proot my < ./testdb/mysql_schema.sql
+          mysql -h 127.0.0.1 -P 3306 -u root -proot my < ./testdb/mysql_seed.sql
       - run: npm test
