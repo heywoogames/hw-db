@@ -88,7 +88,8 @@ export type HwDBCfg = {
 export type AddRecordRet = {
     status: boolean
     tbName?: string
-    ids?: number[]
+    ids?: number[],
+    msg?: string
 }
 
 export interface DBFree {

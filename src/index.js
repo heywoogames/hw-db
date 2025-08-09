@@ -1,11 +1,11 @@
 "use strict";
 
-const { HwPluginBase } = require("@heywoogames/hw-base");
-const AdapterMgr = require("./lib/adapterMgr");
+const { HwPluginBase } = require( "@heywoogames/hw-base" );
+const AdapterMgr = require( "./lib/adapterMgr" );
 
 /**
  *
- * @typedef {Object} ModelItem
+ * @typedef {object} ModelItem
  * @property {typeof Model} mo - 模型实例
  */
 
@@ -17,31 +17,31 @@ const AdapterMgr = require("./lib/adapterMgr");
  * @class
  */
 class HwDbCli extends HwPluginBase {
-  constructor(app, info) {
-    super(app, info);
+  constructor ( app, info ) {
+    super( app, info );
 
     /** @type {import('../index').HwDBCfg} */
     this.cfg = null;
 
     /** @type {AdapterMgr} */
-    this._adaMgr = new AdapterMgr(this);
+    this._adaMgr = new AdapterMgr( this );
   }
 
   /**
    *
-   * @param {Object.<string, Options>} dbs
+   * @param {Record<string, Options>} dbs - 数据库配置
    */
-  #initDBCfg(dbs) {
-    if (dbs) {
-      this._adaMgr.initDBCfg(dbs);
+  #initDBCfg ( dbs ) {
+    if ( dbs ) {
+      this._adaMgr.initDBCfg( dbs );
     }
   }
 
-  async init() {
+  async init () {
     this.cfg = await this.getConfig();
     this.cfg.useTablePartition = this.cfg?.useTablePartition === true;
 
-    this.#initDBCfg(this.cfg.db);
+    this.#initDBCfg( this.cfg.db );
   }
 
   /** 根据db名字，获取DB实例
@@ -49,8 +49,8 @@ class HwDbCli extends HwPluginBase {
    * @param {string} dbInsName db 实例名称
    * @returns { Sequelize | null }
    */
-  getDBIns(dbInsName) {
-    return this._adaMgr.getDBIns(dbInsName);
+  getDBIns ( dbInsName ) {
+    return this._adaMgr.getDBIns( dbInsName );
   }
 
   /** 根据db名字，非Sequelize托管的DB实例
@@ -58,8 +58,8 @@ class HwDbCli extends HwPluginBase {
    * @param {string} dbInsName db 实例名称
    * @returns { import('../index').DBFree | null }
    */
-  getDBInsFree(dbInsName) {
-    return this._adaMgr.getDBIns(dbInsName);
+  getDBInsFree ( dbInsName ) {
+    return this._adaMgr.getDBIns( dbInsName );
   }
 
   /**
@@ -67,14 +67,14 @@ class HwDbCli extends HwPluginBase {
    * @param {string} dbInsName db 实例名称
    * @param {number} lv - 日志级别
    */
-  setlogging(dbInsName, lv) {
+  setlogging ( dbInsName, lv ) {
     const m = this._adaMgr.dbNameMap[dbInsName];
-    if (m !== undefined) {
-      m.adaIns.setlogging(dbInsName, lv);
+    if ( m !== undefined ) {
+      m.adaIns.setlogging( dbInsName, lv );
     }
   }
 
-  get useTablePartition() {
+  get useTablePartition () {
     return this.cfg.useTablePartition;
   }
 
@@ -83,47 +83,47 @@ class HwDbCli extends HwPluginBase {
    * @param {string} tbName 表名字
    * @returns { Model | null }
    */
-  getModelByTbName(tbName) {
-    return this._adaMgr.getModelByTbName(tbName);
+  getModelByTbName ( tbName ) {
+    return this._adaMgr.getModelByTbName( tbName );
   }
 
-  async afterInitAll() {}
+  async afterInitAll () {}
 
-  async beforeStartAll() {
+  async beforeStartAll () {
     this._adaMgr.normalizeCfg();
   }
 
-  async start() {
+  async start () {
     await this._adaMgr.start();
     await this._adaMgr.testConn();
   }
 
-  async stop() {}
+  async stop () {}
 
   /**
    *
-   * @param {Object.<string, Options>} dbCfg
+   * @param {Record<string, Options>} dbCfg - 数据库配置
    */
-  addDB(dbCfg) {
-    this.#initDBCfg(dbCfg);
+  addDB ( dbCfg ) {
+    this.#initDBCfg( dbCfg );
   }
 
   /**
    *
-   * @param {string} tbName
-   * @param {Object.<string, any>[]} data
+   * @param {string} tbName - 表名
+   * @param {Record<string, any>[]} data - 数据
    *
    * @returns {AddRecordRet}
    */
-  async addRecord(tbName, data) {
-    return this._adaMgr.addRecord(tbName, data);
+  async addRecord ( tbName, data ) {
+    return this._adaMgr.addRecord( tbName, data );
   }
 
   /**
    * 获取所有模型
-   * @returns {Object.<string, Model>}
+   * @returns {Record<string, Model>}
    */
-  getModels() {
+  getModels () {
     return this._adaMgr.getModels();
   }
 }
