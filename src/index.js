@@ -25,6 +25,16 @@ class HwDbCli extends HwPluginBase {
 
     /** @type {AdapterMgr} */
     this._adaMgr = new AdapterMgr( this );
+
+    /**
+     * @type {string[]}
+     * - 要使用的数据库实例名称列表
+     */
+    this.useDb = [];
+
+    if ( Array.isArray( info?.extCfg?.useDb ) ) {
+      this.useDb = info.extCfg.useDb;
+    }
   }
 
   /**
@@ -41,7 +51,20 @@ class HwDbCli extends HwPluginBase {
     this.cfg = await this.getConfig();
     this.cfg.useTablePartition = this.cfg?.useTablePartition === true;
 
-    this.#initDBCfg( this.cfg.db );
+    let dbs = {};
+    if ( this.useDb.length > 0 ) {
+      for ( const it of this.useDb ) {
+        if ( this.cfg.db[it] ) {
+          const dbCfg = this.cfg.db[it];
+          dbCfg.enable = true;
+          dbs[it] = dbCfg;
+        }
+      }
+    } else {
+      dbs = this.cfg.db;
+    }
+
+    this.#initDBCfg( dbs );
   }
 
   /** 根据db名字，获取DB实例
