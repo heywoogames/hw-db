@@ -1,105 +1,111 @@
-
-import { HwPluginBase, HwAppBase } from "@heywoogames/hw-base"
+import { HwPluginBase, HwAppBase } from "@heywoogames/hw-base";
 import { Sequelize, Options as SeqOpt, Dialect as SeqDial, Model } from "@sequelize/core";
-import AdapterBase from "./src/lib/adapterBase";
-import AdapterMgr from "./src/lib/adapterMgr";
-import odbc, { Result as OdbcResult} from "odbc"
+import { AdapterBase } from "./src/lib/adapterBase";
+import { AdapterMgr } from "./src/lib/adapterMgr";
+import odbc, { Result as OdbcResult } from "odbc";
 
-export { AdapterBase, AdapterMgr, SeqOpt };
+export { AdapterBase, AdapterMgr, SeqOpt, Sequelize, Model, Options };
+export * from "@sequelize/core";
 
 // 扩展 命令配置项定义
 declare module "@sequelize/core" {
-    export interface Options {
+  export interface Options {
+    /**
+     * db model Path
+     */
+    modelPath: string[];
 
-        /**
-         * db model Path
-        */
-        modelPath: string[];
+    /**
+     * db model Package
+     */
+    modelPackage: string[];
+  }
 
-        /**
-         * db model Package
-        */
-        modelPackage: string[];
-    }
+  export interface Model {
+    convertData(data: object[]): boolean;
+  }
 
-    export interface Model {
-        convertData( data: object[] ): boolean;
-    }
-
-    export interface Sequelize{
-        _ywapp: HwAppBase;
-    }
+  export interface Sequelize {
+    _ywapp: HwAppBase;
+  }
 }
+
+export type ModelX = typeof Model & (new () => Model);
 
 export type OdbcCfg = {
   /** 连接超时,秒, default: 5 */
-  connectionTimeout: number,
+  connectionTimeout: number;
   /** 登录超时,秒, default: 5 */
-  loginTimeout: number,
+  loginTimeout: number;
   /** 连接池 初始连接数, default: 2 */
-  initialSize: number,
+  initialSize: number;
   /** 连接池 增量连接数, default: 2 */
-  incrementSize: number,
+  incrementSize: number;
   /** 连接池 最大连接数, default: 50 */
-  maxSize: number,
+  maxSize: number;
   /** 连接池 是否重用连接, default: true */
-  reuseConnections: boolean,
+  reuseConnections: boolean;
   /** 连接池 是否收缩, default: true */
-  shrink: boolean
-}
+  shrink: boolean;
+};
 
 export type OpenGaussOption = {
-    /** 查询是否使用本地时间 */
-    Sslmode: 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full';
+  /** 查询是否使用本地时间 */
+  Sslmode: "disable" | "allow" | "prefer" | "require" | "verify-ca" | "verify-full";
 
-    /** 设置为1时，将会打印psqlodbc驱动的mylog，日志生成目录为/tmp/。设置为0时则不会生成*/
-    Debug: 0 | 1;
-}
-
+  /** 设置为1时，将会打印psqlodbc驱动的mylog，日志生成目录为/tmp/。设置为0时则不会生成*/
+  Debug: 0 | 1;
+};
 
 export type DialectCfg = SeqOpt & {
-
   /** 时区配置,使用与某些数据库( mysql, opengauss ) */
   timezone?: string;
-  options: {[key: string]: any} | OpenGaussOption;
+  options: { [key: string]: any } | OpenGaussOption;
+
+  /** 日志配置 */
+  logging?: boolean | "console.log" | "console.info";
+
+  /** 是否开启, @default true */
+  enable?: boolean;
 
   /** odbc 配置,适用于 odbc 连接池(opengauss) */
-  odbc?: OdbcCfg
-}
+  odbc?: OdbcCfg;
 
-export type HwDialect = SeqDial | 'opengauss'
+  /** 挂载的数据库名字 */
+  _ywdbName?: string;
+};
 
+export type HwDialect = SeqDial | "opengauss";
 
 export type HwDBCfg = {
-    /** 查询是否使用本地时间 */
-    queryUseLocalTime: boolean;
+  /** 查询是否使用本地时间 */
+  queryUseLocalTime: boolean;
 
-    /** 缺省 数据库 model 存放目录*/
-    modelDefaultPath: string;
+  /** 缺省 数据库 model 存放目录*/
+  modelDefaultPath: string;
 
-    /** 是否开启表分区,缺省 false
-     *   - false,表示不使用（使用老的按月份分表存储某些数据）
-     */
-    useTablePartition: boolean;
+  /** 是否开启表分区,缺省 false
+   *   - false,表示不使用（使用老的按月份分表存储某些数据）
+   */
+  useTablePartition: boolean;
 
-    db: { [key: string]: DialectCfg }
-}
+  db: { [key: string]: DialectCfg };
+};
 
 export type AddRecordRet = {
-    status: boolean
-    tbName?: string
-    ids?: number[],
-    msg?: string
-}
+  status: boolean;
+  tbName?: string;
+  ids?: number[];
+  msg?: string;
+};
 
 export interface DBFree {
-
   /**
    * odbc 原始查询, 返回odbc原始查询结果
    * @param {string} sql -SQL 语句
    * @param {Array<number|string>?} parameters - 参数
    */
-  query( sql: string, parameters: Array<number|string>?): Promise< OdbcResult<T> >;
+  query(sql: string, parameters?: Array<number | string>): Promise<OdbcResult<T>>;
 
   /**
    * 需要返回数组，且数组中每个元素为对象
@@ -108,7 +114,7 @@ export interface DBFree {
    * @param {string} sql -SQL 语句
    * @param {Array<number|string>?} parameters - 参数
    */
-  queryDBSimpleArray<T>(sql: string, parameters: Array<number|string>?): Promise< Array<T> >;
+  queryDBSimpleArray<T>(sql: string, parameters?: Array<number | string>): Promise<Array<T>>;
 
   /** 简单查询, 之返回影响行数，0表示失败
    * 例如,更新和insert等
@@ -116,11 +122,15 @@ export interface DBFree {
    * @param {string} szSql -SQL 语句
    * @param {Array<number|string>} [params] - 参数列表
    *
-   * @return { Promise< number > } 返回影响的行数
+   * @returns { Promise< number > } 返回影响的行数
    */
-  queryDBSimple(sql: string, params: Array<number|string>?): Promise< number >;
-
+  queryDBSimple(sql: string, params?: Array<number | string>): Promise<number>;
 }
+
+export type ModelXItem = {
+  mo: ModelX;
+  adaIns: AdapterBase;
+};
 
 /**
  * @class HwDbCli DB 客户端
@@ -131,70 +141,59 @@ export interface DBFree {
  *   - message ( channel, message)=> {}
  *   - pmessage (pattern, channel, message)=> {}
  */
-export class HwDbCli extends HwPluginBase {
+export class HwDbCli<TApp extends HwAppBase> extends HwPluginBase<TApp> {
+  /** 是否使用表分区 */
+  useTablePartition: boolean;
 
-    /**
-     * 时区差异 秒
-     *
-     * @type {number}
-     * @memberof HwDbCli
-     */
-    tmDiff: number;
+  _adaMgr: AdapterMgr;
 
-    /** 是否使用表分区 */
-    useTablePartition: boolean;
+  cfg: HwDBCfg;
 
-    _adaMgr: AdapterMgr;
+  /** 增加DBS
+   *
+   * @param cfg
+   */
+  addDB(cfg: { [key: string]: SeqOpt }): void;
 
-    cfg: HwDBCfg;
+  /** 根据db名字，获取DB实例
+   *
+   * @param dbInsName DB 名字
+   */
+  getDBIns(dbInsName: string): Sequelize | null;
 
-    /** 增加DBS
-     *
-     * @param cfg
-     */
-    addDB( cfg: { [key: string]: SeqOpt } ): void;
+  /**
+   * 获取非Sequelize托管的DB实例
+   * @param dbInsName DB 名字
+   */
+  getDBInsFree(dbInsName: string): DBFree | null;
 
+  /**
+   * 根据表明获取对应的模型实例
+   * @param tbName - 表名 <tbName>, ex: radar_info
+   *
+   * @example getModelByTbName('radar_info');
+   */
+  getModelByTbName(tbName: string): typeof Model | null;
 
-    /** 根据db名字，获取DB实例
-     *
-     * @param dbInsName DB 名字
-     */
-    getDBIns ( dbInsName: string ): Sequelize | null;
+  /** 增加数据到表
+   *
+   * @param tbName 表名
+   * @param data 数据
+   */
+  addRecord(tbName: string, data: { [key: string]: any }[]): Promise<AddRecordRet>;
 
-    /**
-     * 获取非Sequelize托管的DB实例
-     * @param dbInsName DB 名字
-     */
-    getDBInsFree(dbInsName: string ): DBFree | null;
+  /**
+   * 获取所有模型
+   */
+  getModels(): Record<string, ModelXItem>;
 
-    /**
-     * 根据表明获取对应的模型实例
-     * @param tbName - 表名 <tbName>, ex: radar_info
-     *
-     * @example getModelByTbName('radar_info');
-     */
-    getModelByTbName( tbName: string ): typeof Model | null;
-
-    /** 增加数据到表
-     *
-     * @param tbName 表名
-     * @param data 数据
-     */
-    addRecord( tbName: string, data: {[key:string]: any}[]  ): AddRecordRet;
-
-    /**
-     * 获取所有模型
-     */
-    getModels(): {[key: string]: Model};
-
-    /**
-     * 设置日志级别
-     * @param {string} dbInsName db 实例名称
-     * @param {number} lv - 日志级别
-     *  - 0 关闭日志
-     *  - 1 开启全日志
-     *  - 2 只打印sql
-     */
-    setlogging(dbInsName : string, lv: number);
+  /**
+   * 设置日志级别
+   * @param {string} dbInsName db 实例名称
+   * @param {number} lv - 日志级别
+   *  - 0 关闭日志
+   *  - 1 开启全日志
+   *  - 2 只打印sql
+   */
+  setlogging(dbInsName: string, lv: number);
 }
-

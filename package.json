@@ -1,6 +1,6 @@
 {
   "name": "@heywoogames/hw-db",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "engines": {
     "node": ">=20"
   },
@@ -8,7 +8,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "node ./example/test.js",
-    "lint": "eslint ."
+    "lint": "npx oxlint --config .oxlintrc.json",
+    "format": "npx oxfmt --config .oxfmtrc.json"
   },
   "bin": {
     "checkodbc": "./bin/checkodbc"
@@ -28,21 +29,16 @@
     "@heywoogames:registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@heywoogames/hw-base": "~1.1.4",
+    "@heywoogames/hw-base": "~1.1.7",
     "@heywoogames/hw-utils": "~1.0.0",
     "@sequelize/core": "7.0.0-alpha.19",
-    "mysql2": "~3.14.1",
-    "pg": "~8.16.0",
+    "mysql2": "~3.15.3",
+    "pg": "~8.16.3",
     "tedious": "^18.6.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
-    "eslint": "^9.27.0",
-    "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jsdoc": "^50.6.17",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^5.2.3",
-    "prettier": "^3.5.3"
+    "oxfmt": "^0.26.0",
+    "oxlint": "^1.41.0"
   }
 }

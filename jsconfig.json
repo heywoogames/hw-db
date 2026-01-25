@@ -1,15 +1,26 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "checkJs": false,
-    "strict": true,
+    "target": "esnext",
+    "checkJs": true, // 启用 JavaScript 类型检查
+    "allowJs": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "baseUrl": ".", // 设置基础路径
     "paths": {
-      "@types": ["index.d.ts"]
+      "@types": [
+        "./index.d.ts"
+      ]
     }
   },
-  "include": ["**/*.js", "**/*.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "./main.d.ts",
+    "**/*.d.ts",
+    "**/*.js"
+  ], // 包含所有 JS 文件和类型定义文件
+  "exclude": [
+    "node_modules",
+    "**/*.spec.js",
+    "**/*.test.js"
+  ]
 }

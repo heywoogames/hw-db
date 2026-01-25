@@ -1,4 +1,4 @@
-const AdapterBase = require( "../adapterBase.js" );
+const { AdapterBase } = require("../adapterBase.js");
 
 const odbcDriver = {
   opengauss: "{OpenGaussODBC}",
@@ -18,24 +18,26 @@ class OdbcDb {
    * @param {OdbcAdapter} ada - 数据库适配器
    * @param {import('../../../index').DialectCfg} cfg - 数据库配置
    */
-  constructor ( name, ada, cfg ) {
-    this._odbc = require( "odbc" );
+  constructor(name, ada, cfg) {
+    this._odbc = require("odbc");
 
     this._name = name;
     this._ada = ada;
-    /** @type {import('../../../index').DialectCfg} */
+    /** @type {import('@types').DialectCfg} */
     this._cfg = cfg;
 
     /** @type { import('odbc').Pool | null } */
     this._pool = null;
 
+    /** @type { boolean | "console.log" | "console.info" }  */
     this.logging = false;
   }
 
   /**
-   * @param {Record<string, import('../../../index').DialectCfg>} cfg - 数据库配置
+   * @param { import('@types').DialectCfg} cfg - 数据库配置
+   * @returns {Object} - 连接字符串配置
    */
-  #genConnectionString ( cfg ) {
+  #genConnectionString(cfg) {
     const opt = {
       Driver: odbcDriver[cfg.dialect],
       Servername: cfg.host,
@@ -46,60 +48,56 @@ class OdbcDb {
       Debug: 0,
     };
 
-    if ( cfg.options ) {
-      for ( const key in cfg.options ) {
+    if (cfg.options) {
+      for (const key in cfg.options) {
         opt[key] = cfg.options[key];
       }
     }
-    if ( cfg.logging === true || cfg.logging === "console.info" ) {
+    if (cfg.logging === true || cfg.logging === "console.info") {
       this.logging = cfg.logging;
     }
 
     const optArr = [];
-    for ( const key in opt ) {
-      optArr.push( `${key}=${opt[key]}` );
+    for (const key in opt) {
+      optArr.push(`${key}=${opt[key]}`);
     }
 
-    console.log( `[${this._name}]`, optArr.join( ";" ) );
+    console.log(`[${this._name}]`, optArr.join(";"));
 
     return {
-      connectionString: optArr.join( ";" ) + ";",
-      connectionTimeout:
-        cfg?.odbc?.connectionTimeout || CONNECTION_TIMEOUT_DEFAULT,
+      connectionString: optArr.join(";") + ";",
+      connectionTimeout: cfg?.odbc?.connectionTimeout || CONNECTION_TIMEOUT_DEFAULT,
       loginTimeout: cfg?.odbc?.loginTimeout || LOGIN_TIMEOUT_DEFAULT,
       initialSize: cfg?.odbc?.initialSize || INITIAL_SIZE_DEFAULT,
       incrementSize: cfg?.odbc?.incrementSize || INCREMENT_SIZE_DEFAULT,
       maxSize: cfg?.odbc?.maxSize || MAX_SIZE_DEFAULT,
-      reuseConnections:
-        cfg?.odbc?.reuseConnections || REUSE_CONNECTIONS_DEFAULT,
+      reuseConnections: cfg?.odbc?.reuseConnections || REUSE_CONNECTIONS_DEFAULT,
       shrink: cfg?.odbc?.shrink || SHRINK_DEFAULT,
     };
   }
 
-  async start () {
-    const connString = this.#genConnectionString( this._cfg );
+  async start() {
+    const connString = this.#genConnectionString(this._cfg);
     /** @type { import('odbc').Pool | null } */
-    this._pool = await this._odbc.pool( connString );
-    if ( this._pool ) {
-      this._pool.connectionEmitter.on( "connected", ( connection ) => {
-        console.log( `[${this._name}]`, "connected" );
-
-        if ( this._cfg.dialect === "opengauss" ) {
-          if ( typeof this._cfg.timezone === "string" ) {
-            connection.query( `SET SESSION TIMEZONE TO '${this._cfg.timezone}'` );
+    this._pool = await this._odbc.pool(connString);
+    if (this._pool) {
+      this._pool.connectionEmitter.on("connected", (connection) => {
+        console.log(`[${this._name}]`, "connected");
+        // @ts-ignore
+        if (this._cfg.dialect === "opengauss") {
+          if (typeof this._cfg.timezone === "string") {
+            connection.query(`SET SESSION TIMEZONE TO '${this._cfg.timezone}'`);
           }
         }
-      } );
+      });
     }
   }
 
-  printLog ( res ) {
-    if ( this.logging === true || this.logging === "console.info" ) {
-      this._ada._app.logger.info( `[${this._name}] statement: ` + res.statement );
-      if ( res.parameters.length > 0 ) {
-        this._ada._app.logger.info(
-          `[${this._name}] parameters: ` + JSON.stringify( res.parameters ),
-        );
+  printLog(res) {
+    if (this.logging === true || this.logging === "console.info") {
+      this._ada._app.logger.info(`[${this._name}] statement: ` + res.statement);
+      if (res.parameters.length > 0) {
+        this._ada._app.logger.info(`[${this._name}] parameters: ` + JSON.stringify(res.parameters));
       }
     }
   }
@@ -108,19 +106,20 @@ class OdbcDb {
    * 查询接口
    * @param {string} sql - 查询语句
    * @param {Array<number|string>} [params] - 参数列表
+   * @returns { Promise< import('odbc').Result > } 返回查询结果
    */
-  async query ( sql, params ) {
-    if ( this._pool === null ) {
-      throw new Error( "pool is null" );
+  async query(sql, params) {
+    if (this._pool === null) {
+      throw new Error("pool is null");
     }
 
     let res = null;
-    if ( Array.isArray( params ) ) {
-      res = await this._pool.query( sql, params );
-      this.printLog( res );
+    if (Array.isArray(params)) {
+      res = await this._pool.query(sql, params);
+      this.printLog(res);
     } else {
-      res = await this._pool.query( sql );
-      this.printLog( res );
+      res = await this._pool.query(sql);
+      this.printLog(res);
     }
 
     return res;
@@ -132,20 +131,20 @@ class OdbcDb {
    * @param {string} szSql 查询字符串
    * @param {Array<number|string>} [params] - 参数列表
    *
-   * @return { Promise<T[]>} 返回数据数组
+   * @returns { Promise<T[]>} 返回数据数组
    */
-  async queryDBSimpleArray ( szSql, params ) {
+  async queryDBSimpleArray(szSql, params) {
     try {
-      const ret = await this.query( szSql, params );
+      const ret = await this.query(szSql, params);
 
-      if ( ret.length > 0 ) {
-        return ret.map( ( item ) => {
+      if (ret.length > 0) {
+        return ret.map((item) => {
           return item;
-        } );
+        });
       }
       return [];
-    } catch ( e ) {
-      throw new Error( `${szSql}, Error: ${e.toString()}` );
+    } catch (e) {
+      throw new Error(`${szSql}, Error: ${e.toString()}`, { cause: e });
     }
   }
 
@@ -154,29 +153,33 @@ class OdbcDb {
    * @param {string} szSql -SQL 语句
    * @param {Array<number|string>} [params] - 参数列表
    *
-   * @return { Promise< number > } 返回影响的行数
+   * @returns { Promise< number > } 返回影响的行数
    */
-  async queryDBSimple ( szSql, params ) {
+  async queryDBSimple(szSql, params) {
     try {
-      const ret = await this.query( szSql, params );
+      const ret = await this.query(szSql, params);
       return ret.count;
-    } catch ( e ) {
-      throw new Error( `${szSql}, Error: ${e.toString()}` );
+    } catch (e) {
+      throw new Error(`${szSql}, Error: ${e.toString()}`, { cause: e });
     }
   }
 
-  async connection () {
-    if ( this._pool === null ) {
-      throw new Error( "pool is null" );
+  async connection() {
+    if (this._pool === null) {
+      throw new Error("pool is null");
     }
 
     return await this._pool.connect();
   }
 }
 
+/**
+ * ODBC 适配器
+ * @augments {AdapterBase<OdbcDb>}
+ */
 class OdbcAdapter extends AdapterBase {
-  constructor ( mgr ) {
-    super( mgr, "opengauss" );
+  constructor(mgr) {
+    super(mgr, "opengauss");
 
     this.supportDialect = ["opengauss"];
 
@@ -189,20 +192,20 @@ class OdbcAdapter extends AdapterBase {
    * @param {string} name 配置名
    * @param {import('../../../index').DialectCfg} cfg 配置
    */
-  addDialectCfg ( name, cfg ) {
+  addDialectCfg(name, cfg) {
     this._dialectCfg[name] = cfg;
     return cfg;
   }
 
-  async start () {
-    for ( const key in this._dialectCfg ) {
+  async start() {
+    for (const key in this._dialectCfg) {
       const cfg = this._dialectCfg[key];
-      if ( cfg?.enable === false ) {
-        this._app.logger.info( `- [${key}] db: ${cfg.database} is disabled` );
+      if (cfg?.enable === false) {
+        this._app.logger.info(`- [${key}] db: ${cfg.database} is disabled`);
         continue;
       }
 
-      const ins = new OdbcDb( key, this, cfg );
+      const ins = new OdbcDb(key, this, cfg);
       await ins.start();
 
       this.db[key] = ins;
@@ -213,23 +216,18 @@ class OdbcAdapter extends AdapterBase {
    * @override
    * @param {import('../../../index').DialectCfg} _cfg 配置
    */
-  validCfg ( _cfg ) {}
+  validCfg(_cfg) {}
 
-  async testConn () {
+  async testConn() {
     const szSql = "select version();";
 
-    for ( const key in this.db ) {
+    for (const key in this.db) {
       try {
-        const res = await this.db[key].query( szSql );
-        this._app.logger.info(
-          `Connection has been established successfully. ${key}`,
-        );
-        this._app.logger.info( `${key}: ${res[0].version}` );
-      } catch ( error ) {
-        this._app.logger.error(
-          `Unable to connect to the database: ${key}`,
-          error,
-        );
+        const res = await this.db[key].query(szSql);
+        this._app.logger.info(`Connection has been established successfully. ${key}`);
+        this._app.logger.info(`${key}: ${res[0].version}`);
+      } catch (error) {
+        this._app.logger.error(`Unable to connect to the database: ${key}`, error);
       }
     }
   }
@@ -239,16 +237,16 @@ class OdbcAdapter extends AdapterBase {
    * @param {string} dbInsName db 实例名称
    * @param {number} lv - 日志级别
    */
-  setlogging ( dbInsName, lv ) {
+  setlogging(dbInsName, lv) {
     const ins = this.db[dbInsName];
-    if ( ins !== undefined ) {
-      switch ( lv ) {
-      case 0:
-        ins.logging = false;
-        break;
-      default:
-        ins.logging = "console.info";
-        break;
+    if (ins !== undefined) {
+      switch (lv) {
+        case 0:
+          ins.logging = false;
+          break;
+        default:
+          ins.logging = "console.info";
+          break;
       }
     }
   }

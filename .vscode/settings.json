@@ -1,8 +1,27 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+  "oxc.enable": true,
+  // "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": null, // 取消全局默认
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
-  "eslint.validate": [
-    "javascript"
-  ]
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": ".npmrc,.gitignore,.npmignore,*.json, *.md"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/Thumbs.db": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/dist": true
+  }
 }
