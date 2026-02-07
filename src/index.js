@@ -2,7 +2,7 @@
 
 const { HwPluginBase } = require("@heywoogames/hw-base");
 const { AdapterMgr } = require("./lib/adapterMgr");
-const { Sequelize, Model, DataTypes, QueryTypes, Op, literal } = require("@sequelize/core");
+const { Sequelize, Model, DataTypes, QueryTypes, Op, literal, fn } = require("@sequelize/core");
 
 function capitalizeFirstLetter(str) {
   if (!str) return "";
@@ -244,4 +244,5 @@ module.exports = {
   QueryTypes,
   Op,
   literal,
+  fn,
 };
