@@ -1,8 +1,8 @@
 {
   "name": "@heywoogames/hw-db",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "description": "hw db plugin",
   "main": "src/index.js",
@@ -29,7 +29,7 @@
     "@heywoogames:registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@heywoogames/hw-base": "~1.1.7",
+    "@heywoogames/hw-base": "~1.1.8",
     "@heywoogames/hw-utils": "~1.0.0",
     "@sequelize/core": "7.0.0-alpha.19",
     "mysql2": "~3.15.3",
@@ -37,8 +37,8 @@
     "tedious": "^18.6.1"
   },
   "devDependencies": {
-    "@types/node": "^20.14.8",
-    "oxfmt": "^0.26.0",
-    "oxlint": "^1.41.0"
+    "@types/node": "^24.1.0",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.57.0"
   }
 }

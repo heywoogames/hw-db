@@ -7,16 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:               # 让 GITHUB_TOKEN 有读包权限
+    permissions: # 让 GITHUB_TOKEN 有读包权限
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version-file: 'package.json'
+          node-version-file: "package.json"
           registry-url: https://npm.pkg.github.com
-          scope: '@heywoogames'
+          scope: "@heywoogames"
       - run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,11 +29,11 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version-file: 'package.json'
+          node-version-file: "package.json"
           registry-url: https://npm.pkg.github.com
-          scope: '@heywoogames'
+          scope: "@heywoogames"
       - run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

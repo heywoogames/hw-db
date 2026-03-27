@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    permissions:               # 让 GITHUB_TOKEN 有读包权限
+    permissions: # 让 GITHUB_TOKEN 有读包权限
       contents: read
       packages: read
     # 1) MySQL 服务容器定义
@@ -16,7 +16,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: my           # 自动创建数据库 my
+          MYSQL_DATABASE: my # 自动创建数据库 my
         ports:
           - 3306:3306
         options: >-
@@ -27,11 +27,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version-file: 'package.json'
-          registry-url: https://npm.pkg.github.com  # 指向 GitHub Packages
-          scope: '@heywoogames'                         # 你的包作用域
+          node-version-file: "package.json"
+          registry-url: https://npm.pkg.github.com # 指向 GitHub Packages
+          scope: "@heywoogames" # 你的包作用域
       - run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
