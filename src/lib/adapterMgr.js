@@ -1,6 +1,7 @@
 const path = require("node:path");
 const fs = require("node:fs");
 const { utils } = require("@heywoogames/hw-utils");
+const { resolveEnvCfg } = require("./envResolve");
 
 class AdapterMgr {
   /**
@@ -93,6 +94,8 @@ class AdapterMgr {
 
     for (const key in dbs) {
       const cfgT = dbs[key];
+
+      resolveEnvCfg(cfgT);
 
       const dialect = cfgT.dialect ?? "mysql";
 
